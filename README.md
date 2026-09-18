@@ -59,7 +59,7 @@ Output goes to `./docking/<label>/`; override with `HDOCK_OUT=/some/dir`.
 | `helix_wheel.py` | are the contacts on one face of a helix? |
 | `ss_table.py` | which residue is in which secondary structure (DSSP) |
 
-## Three things worth knowing
+## Four things worth knowing
 
 **1. The ligand chain must not collide with a receptor chain.** If it does, the
 two merge in the model PDB and every downstream analysis silently breaks — the
@@ -73,6 +73,13 @@ arbitrarily.
 
 **3. Take the biggest cluster, not the best score.** One good score can be noise;
 the same site found from several independent ligand conformers cannot be.
+
+**4. Check the residue numbering before you quote it.** A file straight from the
+PDB carries author numbering — what the literature uses. Anything that has been
+through `pdb2gmx` is renumbered from 1 per chain, so residue 17 in the file may
+be residue 60 in the paper. `ss_table.py` prints the file's range up front and
+warns when it starts at 1; pass `--offset` to restore the real numbers. Getting
+this wrong is silent — nothing errors, you just discuss the wrong residues.
 
 Scoring in detail: [`docs/scoring.md`](docs/scoring.md) ·
 Validation run: [`examples/1cgi.md`](examples/1cgi.md) ·
