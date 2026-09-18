@@ -35,6 +35,10 @@ python3 scripts/select_pose.py docking/myjob
 # per-residue contact frequency across every pose
 python3 scripts/contact_map.py docking/myjob --top 15
 
+# which residues are helix / strand / loop?  (check before trusting helix_wheel)
+python3 scripts/ss_table.py receptor.pdb --chain A --ranges
+python3 scripts/ss_table.py 3tq6                    # or straight from the PDBe API
+
 # is the contacted set one face of a helix, or scattered?
 python3 scripts/helix_wheel.py docking/myjob/k1_model_1.pdb \
         --chain A --range 56-71 --contacts 60,63,64,67,68,71
@@ -52,6 +56,7 @@ Output goes to `./docking/<label>/`; override with `HDOCK_OUT=/some/dir`.
 | `select_pose.py` | cluster poses by **contact fingerprint**, pick a representative |
 | `contact_map.py` | per-residue contact frequency over all poses |
 | `helix_wheel.py` | are the contacts on one face of a helix? |
+| `ss_table.py` | which residue is in which secondary structure (DSSP) |
 
 ## Three things worth knowing
 
