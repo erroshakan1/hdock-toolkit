@@ -22,7 +22,10 @@ AD = {"H": "alpha-helix", "G": "3-10 helix", "I": "pi helix", "P": "PPII",
       "-": "loop/coil", " ": "loop/coil"}
 
 ap = argparse.ArgumentParser()
-ap.add_argument("target", help="PDB file, or a 4-character PDB code to fetch")
+ap.add_argument("target", help="PDB file, or a 4-character PDB code")
+ap.add_argument("--fetch", action="store_true",
+                help="with a PDB code: download the structure and run DSSP on it, "
+                     "instead of reading the deposited assignment from PDBe")
 ap.add_argument("--chain", default=None)
 ap.add_argument("--offset", type=int, default=0)
 ap.add_argument("--ranges", action="store_true", help="only print the ranges")
@@ -46,11 +49,19 @@ def from_pdbe(code):
                           f"{s['end']['residue_number']:<4d} {ad}")
 
 
-if not Path(a.target).exists():
-    if len(a.target) == 4:
+target = Path(a.target)
+if not target.exists():
+    if len(a.target) != 4:
+        sys.exit(f"no such file: {a.target}")
+    if not a.fetch:
         from_pdbe(a.target)
         sys.exit()
-    sys.exit(f"no such file: {a.target}")
+    import tempfile
+    url = f"https://files.rcsb.org/download/{a.target.upper()}.pdb"
+    target = Path(tempfile.gettempdir()) / f"{a.target.upper()}.pdb"
+    if not target.exists():
+        print(f"downloading {url}")
+        urllib.request.urlretrieve(url, target)
 
 try:
     import warnings; warnings.filterwarnings("ignore")
@@ -59,14 +70,26 @@ try:
 except ImportError:
     sys.exit("needs MDAnalysis >= 2.4  (pip install MDAnalysis)")
 
-u = mda.Universe(a.target)
+u = mda.Universe(str(target))
 sel = "protein" + (f" and chainID {a.chain}" if a.chain else "")
 prot = u.select_atoms(sel)
 if not len(prot):
     sys.exit(f"no atoms matched '{sel}'")
 
 code = DSSP(prot).run().results.dssp[0]
-resid = prot.residues.resids + a.offset
+raw = prot.residues.resids
+resid = raw + a.offset
+
+# Numbering sanity check. Files straight from the PDB carry AUTHOR numbering
+# (what the literature uses). Anything that went through GROMACS pdb2gmx is
+# renumbered from 1 per chain, and then --offset is needed to get back.
+print(f"file numbering: {raw[0]}-{raw[-1]}"
+      + (f"   reported as: {resid[0]}-{resid[-1]}  (offset {a.offset:+d})"
+         if a.offset else ""))
+if raw[0] == 1 and not a.offset:
+    print("  NOTE: numbering starts at 1. If this structure came from GROMACS,")
+    print("        it was renumbered - pass --offset to restore the real numbers.")
+print()
 
 if not a.ranges:
     print(f"{len(code)} residues | H alpha-helix  E beta-strand  - loop\n")

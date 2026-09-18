@@ -37,7 +37,8 @@ python3 scripts/contact_map.py docking/myjob --top 15
 
 # which residues are helix / strand / loop?  (check before trusting helix_wheel)
 python3 scripts/ss_table.py receptor.pdb --chain A --ranges
-python3 scripts/ss_table.py 3tq6                    # or straight from the PDBe API
+python3 scripts/ss_table.py 3tq6                 # deposited assignment, PDBe API
+python3 scripts/ss_table.py 3tq6 --fetch         # download and run DSSP yourself
 
 # is the contacted set one face of a helix, or scattered?
 python3 scripts/helix_wheel.py docking/myjob/k1_model_1.pdb \

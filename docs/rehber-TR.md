@@ -198,6 +198,32 @@ print("".join(DSSP(u.select_atoms("protein")).run().results.dssp[0]))
 
 ---
 
+## 7b. Kalıntı numaraları — `--offset` ne zaman gerekir
+
+Bir yapıdaki numaralar nereden geldiğine göre değişir:
+
+| Kaynak | İlk kalıntı | `--offset` |
+|---|---|---|
+| RCSB/PDBe'den inen dosya | makaledeki numara (ör. TFAM'da 44) | **gerekmez** |
+| `pdb2gmx`'ten geçmiş dosya | her zincir 1'den | **gerekir** |
+| Docking çıktısı | girdideki numaralandırma neyse o | girdiye bakar |
+
+`pdb2gmx` her zinciri 1'den yeniden numaralar. TFAM fragmanı SER44'ten başladığı
+için kayma 43'tür: `ic_numara + 43 = makale_numarasi`.
+
+Kaymayı bulmak: dosyadaki ilk kalıntı numarasına bak, makalede o kalıntının kaç
+olduğunu bul, farkı al.
+
+```bash
+# dosyadaki ilk protein kalintisi
+awk '/^ATOM/ && substr($0,14,2)=="CA"{print substr($0,23,4)+0, substr($0,18,3); exit}' yapi.pdb
+```
+
+`ss_table.py` dosyadaki aralığı baştan basar ve 1'den başlıyorsa uyarır.
+Bu kaymayı kaçırmak sessiz bir hatadır — yanlış kalıntı hakkında konuşursun.
+
+---
+
 ## 8. Sınırlar — ne iddia edemezsin
 
 - Rijit gövde: ligand da reseptör de esnemiyor. Düzensiz peptitler için özellikle
