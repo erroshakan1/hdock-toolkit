@@ -82,8 +82,7 @@ warns when it starts at 1; pass `--offset` to restore the real numbers. Getting
 this wrong is silent — nothing errors, you just discuss the wrong residues.
 
 Scoring in detail: [`docs/scoring.md`](docs/scoring.md) ·
-Validation run: [`examples/1cgi.md`](examples/1cgi.md) ·
-Turkish walkthrough: [`docs/rehber-TR.md`](docs/rehber-TR.md)
+Validation run: [`examples/1cgi.md`](examples/1cgi.md)
 
 ## Limits
 
